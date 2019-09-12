@@ -1,0 +1,48 @@
+{
+  "inventory":{
+    "CASUAL":{
+      "MALE":{
+        "product":[
+          {
+            "description":"Jeans",
+            "size":10,
+            "color":"black",
+            "stockAvailable":5
+          },{
+            "description":"Jeans",
+            "size":10,
+            "color":"blue",
+            "stockAvailable":10
+          },
+          {
+            "description":"Jeans",
+            "size":8,
+            "color":"black"	,
+            "stockAvailable":6
+          }
+        ]
+      },
+      "FEMALE":{
+        "product":[
+          {
+            "description":"Jeans",
+            "size":10,
+            "color":"black",
+            "stockAvailable":5
+          },{
+            "description":"Jeans",
+            "size":10,
+            "color":"blue",
+            "stockAvailable":10
+          },
+          {
+            "description":"Jeans",
+            "size":8,
+            "color":"black"	,
+            "stockAvailable":6
+          }
+        ]
+      }
+    }
+  }
+}

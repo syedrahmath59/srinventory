@@ -1,0 +1,119 @@
+plugins {
+    id 'java'
+    id 'org.springframework.boot' version '2.1.7.RELEASE'
+    id 'io.spring.dependency-management' version '1.0.8.RELEASE'
+    id 'war'
+    id 'jacoco'
+}
+
+
+group 'com.inventory.store'
+version '1.0-SNAPSHOT'
+
+
+
+ext {
+    jacocoVersion = '0.7.5.201505241946'
+    tomcatHome = 'C:/MYDATA/POC/JENKINS/apache-tomcat-8.5.34'
+}
+
+sourceCompatibility = 1.8
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+    implementation 'org.springframework.boot:spring-boot-starter'
+    compile("org.springframework.boot:spring-boot-starter-web")
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
+}
+
+//Configures the classpath and the source and resource directories
+//of the integrationTest task.
+sourceSets {
+    //Declaring this source set creates compile time and runtime configurations for it.
+    integrationTest {
+        java {
+            compileClasspath += main.output + test.output
+            runtimeClasspath += main.output + test.output
+            srcDir file('src/integration-test/java')
+        }
+        resources.srcDir file('src/integration-test/resources')
+    }
+}
+//Configures the compile and runtime configurations for our integration tests
+//and includes the dependencies of the test task.
+configurations {
+    integrationTestCompile.extendsFrom testImplementation
+    integrationTestRuntime.extendsFrom testImplementation
+}
+
+//Create the task that runs the integration tests found from the
+//configured source directory and uses the correct classpath.
+task integrationTest(type: Test) {
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
+    classpath = sourceSets.integrationTest.runtimeClasspath
+    //If you want to ensure that integration tests are run every time when you invoke
+    //this task, uncomment the following line.
+    outputs.upToDateWhen { false }
+    testLogging {
+        events "PASSED", "STARTED", "FAILED", "SKIPPED"
+    }
+}
+
+test {
+    //we want display the following test events
+    testLogging {
+        events "PASSED", "STARTED", "FAILED", "SKIPPED"
+    }
+}
+
+jacoco {
+    toolVersion = jacocoVersion
+}
+
+jacocoTestReport {
+    reports {
+        html.enabled = true
+        xml.enabled = true
+        csv.enabled = true
+    }
+}
+
+/* Configuration for tomcat */
+
+
+task startTomcat << {
+    println "Tomcat path: " + tomcatHome+"/bin"
+    ProcessBuilder pb = new ProcessBuilder(["cmd", "/c", "catalina.bat", "start"]);
+    pb.directory(new File(tomcatHome+"/bin"));
+
+    println "Starting tomcat now ... "
+    Process proc = pb.start();
+    proc.waitFor();
+    println "Tomcat is coming up now ... " + proc.exitValue()
+}
+
+task stopTomcat << {
+
+    println "Tomcat path: " + tomcatHome+"/bin"
+    ProcessBuilder pb1 = new ProcessBuilder(["cmd", "/c", "catalina.bat", "stop"]);
+    pb1.directory(new File(tomcatHome+"/bin"));
+
+    println "Stopping tomcat now ... "
+    Process proc1 = pb1.start();
+    proc1.waitFor();
+}
+
+task deployToTomcat(type: Copy) {
+    from war.archivePath
+    into "${tomcatHome}/webapps"
+}
+
+//Ensure that the check task fails the build if there are failing integration tests.
+//check.dependsOn integrationTest
+//Ensure that our unit tests are run before our integration tests
+//integrationTest.mustRunAfter test
